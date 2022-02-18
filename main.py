@@ -5,8 +5,6 @@ import os
 import sys
 import atexit
 
-# todo snapshot with pygit2
-# todo assert extension is .salt (what about pytorch integration?)
 # todo add an option to tolerate missing commits 
 # todo patch subclasscheck
 # todo if the current commit matches the snapshot, just load form the current working directory
@@ -14,11 +12,15 @@ import atexit
 # todo avoid heavy snapshots by imposing a file limit
 # todo verbose mode for deleted tags
 # todo unit test this
+# todo snapshot with pygit2
 
 SNAPSHOT_NAME_LENGTH = 24
 
+def bash(cmd):
+    os.popen(cmd).read().strip()
+
 if not hasattr(os.environ, "SALT_SNAPSHOT"):
-    os.environ["SALT_SNAPSHOT"] = os.popen("bash snapshot.sh").read().strip()
+    os.environ["SALT_SNAPSHOT"] = bash("bash snapshot.sh")
 
 save_was_called = False
 
@@ -45,7 +47,8 @@ def load(filename: str, enforce_correct_extension: bool = True):
                 return pickle.load(file)
 
 def inside_the_snapshot() -> bool:
-    return false
+    current_branch = bash("git rev-parse --abbrev-ref HEAD")
+    return current_branch == os.environ["SALT_SNAPSHOT"]
 
 @atexit.register
 def cleanup():
