@@ -1,1 +1,4 @@
-a = 1
+
+class Cls:
+    def f():
+        return 1
