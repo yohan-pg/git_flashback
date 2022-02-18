@@ -1,192 +1,60 @@
-import sys
-import pygit2
-import os.path
-from importlib.machinery import ModuleSpec
-from importlib.abc import PathEntryFinder, Loader
-import importlib
-import pygit2
-import sys
-import contextlib
-
-
-GIT_REVISION_SEPARATOR = "@"
-PACKAGE_SUFFIX = "/__init__.py"
-SOURCE_SUFFIX = ".py"
-
-
-class GitPathNotFoundError(Exception):
-    pass
-
-
-class GitImportError(ImportError):
-    pass
-
-
-def split_git_path(path):
-    in_repo_path = ""
-    while True:
-
-        if len(path) == 0:
-            break
-
-        try:
-            git_repo, commit_sha = path.split(GIT_REVISION_SEPARATOR, 1)
-        except ValueError:
-            # In case the path does not contain a GIT_REVISION_SEPARATOR
-            break
-
-        if os.path.isdir(git_repo) and not os.path.isdir(path):
-            try:
-                commit = pygit2.Repository(git_repo)[commit_sha]
-                return git_repo, commit_sha, in_repo_path
-            except ValueError:
-                pass
-
-        path, rest = os.path.split(path)
-        in_repo_path = os.path.join(rest, in_repo_path)
-
-    raise GitPathNotFoundError
-
-
-class gitimporter(PathEntryFinder):
-    def __init__(self, repopath):
-        self.repopath = repopath
-
-        try:
-            self.repo_basepath, self.commit_sha, self.in_repo_path = split_git_path(
-                repopath
-            )
-        except GitPathNotFoundError:
-            raise GitImportError("Git path not found")
-
-        try:
-            self.repo = pygit2.Repository(self.repo_basepath)
-            self.commit = self.repo.get(self.commit_sha)
-        except ValueError as e:
-            raise GitImportError("Error importing Repository")
-
-    def get_tree_entry(self, key):
-        return self.commit.tree[os.path.join(self.in_repo_path, key)]
-
-    def find_spec(self, modulename, target):
-        tail_modulename = modulename.rpartition(".")[2]
-
-        try:
-            path = tail_modulename + PACKAGE_SUFFIX
-            tree_entry = self.get_tree_entry(path)
-            if isinstance(tree_entry, pygit2.Blob):
-                spec = ModuleSpec(
-                    modulename,
-                    GitLoader(tree_entry, self.repo, self.commit_sha),
-                    is_package=True,
-                    origin=path,
-                )
-                spec.submodule_search_locations = [
-                    os.path.join(self.repopath, tail_modulename)
-                ]
-                return spec
-        except KeyError:
-            pass
-
-        try:
-            path = tail_modulename + SOURCE_SUFFIX
-            tree_entry = self.get_tree_entry(path)
-            if isinstance(tree_entry, pygit2.Blob):
-                return ModuleSpec(
-                    modulename,
-                    GitLoader(tree_entry, self.repo, self.commit_sha),
-                    origin=path,
-                )
-        except KeyError:
-            pass
-
-
-class GitLoader(Loader):
-    def __init__(self, tree_entry, repo, commit_sha=None):
-        self.tree_entry = tree_entry
-        self.repo = repo
-        self.commit_sha = commit_sha
-
-    def create_module(self, spec) -> None:
-        return None
-
-    def get_code(self) -> str:
-        return self.repo[self.tree_entry.id].data
-
-    def exec_module(self, module) -> None:
-        if self.commit_sha is not None:
-            module.__git_commit__ = self.commit_sha
-        exec(self.get_code(), module.__dict__)
-
-
-def add_gitimporter_path_hook():
-    """
-    Add gitimport to sys.path_hooks.
-    """
-    if gitimporter not in sys.path_hooks:
-        sys.path_hooks.append(gitimporter)
-
-
-def repository_path(repo, rev="HEAD", in_repo_path=""):
-    """
-    Build a path (for further use in sys.path) from a repository reference
-    :param repo: a pygit2 repository object or a path to a git repository
-    :param rev: the revision which should be used. Acceptable values are all valid git revisions such as 'master',
-    'origin/master', 'HEAD', commit SHAs (see man gitrevisions for more information)
-    :param in_repo_path: path inside the repository from which the modules should be loaded
-    :return:
-    """
-
-    if isinstance(repo, str):
-        repo = pygit2.Repository(repo)
-
-    path = "{}@{}".format(repo.path, repo.revparse_single(rev).hex)
-    return os.path.join(path, in_repo_path)
-
-
-def add_repository_to_path(repo, rev="HEAD", in_repo_path="") -> str:
-    """
-    Adds a repository reference to sys.path. If gitimporter is not initialized yet, it will also be added to
-    sys.path_hooks
-    :param repo: a pygit2 repository object or a path to a git repository
-    :param rev: the revision which should be used. Acceptable values are all valid git revisions such as 'master',
-    'origin/master', 'HEAD', commit SHAs (see man gitrevisions for more information)
-    :param in_repo_path: path inside the repository from which the modules should be loaded
-    :return:
-    """
-    add_gitimporter_path_hook()
-    path = repository_path(repo, rev, in_repo_path)
-    assert path is not None, f"Revision not found: {rev}"
-    sys.path.insert(0, repository_path(repo, rev, in_repo_path))
-    return path
-
-
-@contextlib.contextmanager
-def modules_from_git(rev="HEAD", repo=".", in_repo_path=""):
-    old_modules = {**sys.modules}
-    sys.modules.clear()
-    path = add_repository_to_path(repo, rev, in_repo_path)
-    yield
-    sys.path.remove(path)
-    sys.path_hooks.remove(gitimporter)
-    sys.modules.clear()
-    sys.modules.update(old_modules)
-
-def import_from_git(module_name: str, rev: str, repo_path: str = "."):
-    spec = importlib.util.find_spec(module_name, repository_path(repo_path, rev=rev))
-    return importlib.util.module_from_spec(spec)
-
+from gitimport import modules_from_git
 import pickle 
+import pygit2
+import os
+import sys
+import atexit
 
-import a 
+# todo snapshot with pygit2
+# todo assert extension is .salt (what about pytorch integration?)
+# todo add an option to tolerate missing commits 
+# todo patch subclasscheck
+# todo if the current commit matches the snapshot, just load form the current working directory
+# todo pickle interface -> use torch
+# todo avoid heavy snapshots by imposing a file limit
+# todo verbose mode for deleted tags
+# todo unit test this
 
-with modules_from_git("335b82eb7044a4a487d099a95e3233cc58e1285c"):
-    instance = pickle.load(open("cls.pkl", "rb"))
-    print(instance.f.__func__())
+SNAPSHOT_NAME_LENGTH = 24
 
-print(pickle.load(open("cls.pkl", "rb")).f.__func__())
+if not hasattr(os.environ, "SALT_SNAPSHOT"):
+    os.environ["SALT_SNAPSHOT"] = os.popen("bash snapshot.sh").read().strip()
 
+save_was_called = False
 
-repo = pygit2.Repository(".")
+def save(obj, filename: str, enforce_correct_extension: bool = True) -> None:
+    global save_was_called 
+    save_was_called = True
 
-# repo.
+    if enforce_correct_extension:
+        assert filename.split(".")[-1] == "salt"
+    
+    with open(filename, "wb") as file:
+        file.write(os.environ["SALT_SNAPSHOT"].encode("ascii"))
+        pickle.dump(obj, file)
+
+def load(filename: str, enforce_correct_extension: bool = True):
+    if enforce_correct_extension:
+        assert filename.split(".")[-1] == "salt"
+    
+    with open(filename, "rb") as file:
+        if inside_the_snapshot():
+            return pickle.load(file)
+        else:
+            with modules_from_git(str(file.read(SNAPSHOT_NAME_LENGTH), "ascii")):
+                return pickle.load(file)
+
+def inside_the_snapshot() -> bool:
+    return false
+
+@atexit.register
+def cleanup():
+    if not save_was_called:
+        os.system(f"git tag -d " + os.environ["SALT_SNAPSHOT"])
+
+from a import Cls
+
+# save(Cls(), "cls.salt")
+cls = load("cls.salt")
+
+print(cls.f())

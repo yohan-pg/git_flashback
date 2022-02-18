@@ -1,4 +1,4 @@
 
 class Cls:
-    def f():
-        return 2
+    def f(self):
+        return "b"
