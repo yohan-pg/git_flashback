@@ -57,7 +57,7 @@ def cleanup():
 from a import Cls
 
 save(Cls(), "cls.salt")
-cls = load("cls.salt")
+# cls = load("cls.salt")
 
-print(os.environ["SALT_SNAPSHOT"])
-print(cls.f())
+# print(os.environ["SALT_SNAPSHOT"])
+# print(cls.f())
