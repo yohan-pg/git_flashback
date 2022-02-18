@@ -17,7 +17,7 @@ import atexit
 SNAPSHOT_NAME_LENGTH = 24
 
 def bash(cmd):
-    os.popen(cmd).read().strip()
+    return os.popen(cmd).read().strip()
 
 if not hasattr(os.environ, "SALT_SNAPSHOT"):
     os.environ["SALT_SNAPSHOT"] = bash("bash snapshot.sh")
@@ -47,8 +47,7 @@ def load(filename: str, enforce_correct_extension: bool = True):
                 return pickle.load(file)
 
 def inside_the_snapshot() -> bool:
-    current_branch = bash("git rev-parse --abbrev-ref HEAD")
-    return current_branch == os.environ["SALT_SNAPSHOT"]
+    return bash("git describe --tags") == os.environ["SALT_SNAPSHOT"]
 
 @atexit.register
 def cleanup():
@@ -57,7 +56,8 @@ def cleanup():
 
 from a import Cls
 
-# save(Cls(), "cls.salt")
+save(Cls(), "cls.salt")
 cls = load("cls.salt")
 
+print(os.environ["SALT_SNAPSHOT"])
 print(cls.f())
