@@ -1,4 +1,4 @@
 
 class Cls:
     def f():
-        return 1
+        return 2

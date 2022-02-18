@@ -116,7 +116,6 @@ class GitLoader(Loader):
     def exec_module(self, module) -> None:
         if self.commit_sha is not None:
             module.__git_commit__ = self.commit_sha
-        print("woahh")
         exec(self.get_code(), module.__dict__)
 
 
@@ -164,29 +163,30 @@ def add_repository_to_path(repo, rev="HEAD", in_repo_path="") -> str:
 
 @contextlib.contextmanager
 def modules_from_git(rev="HEAD", repo=".", in_repo_path=""):
+    old_modules = {**sys.modules}
+    sys.modules.clear()
     path = add_repository_to_path(repo, rev, in_repo_path)
     yield
     sys.path.remove(path)
     sys.path_hooks.remove(gitimporter)
-
+    sys.modules.clear()
+    sys.modules.update(old_modules)
 
 def import_from_git(module_name: str, rev: str, repo_path: str = "."):
     spec = importlib.util.find_spec(module_name, repository_path(repo_path, rev=rev))
     return importlib.util.module_from_spec(spec)
 
+import pickle 
+
+import a 
+
+with modules_from_git("335b82eb7044a4a487d099a95e3233cc58e1285c"):
+    instance = pickle.load(open("cls.pkl", "rb"))
+    print(instance.f.__func__())
+
+print(pickle.load(open("cls.pkl", "rb")).f.__func__())
 
 
-def snapshot():
-    pass
+repo = pygit2.Repository(".")
 
-
-
-with modules_from_git("534e9317ddb3b0629cc6767a591a77953b9202bb"):
-    import a
-print(a.a)
-importlib.reload(a)
-print(a.a)
-
-
-
-# print(import_from_git("a", "534e9317ddb3b0629cc6767a591a77953b9202bb"))
+# repo.
