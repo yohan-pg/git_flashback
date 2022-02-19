@@ -1,15 +1,15 @@
 
-- make the basic stuff work again
-- should we really use a 
-- add magic bytes!
 - avoid heavy snapshots by imposing a 1mb file limit -> something
 - verbose mode for deleted tags
+- understand snapshot.sh
 - rename tags to lables
 - add a way of clearing old cans
 - add a way of acessing loaded modules from the git
 - patch subclasscheck on reloaded classes... this might be a bit tricky. Maybe just add a decorator?
+- fix loading failing for classes without a __init__ file...
 
 
+- test: autocleanup
 - test: paths work when running from another directory
 - test: optional file instead of filename string
 - test: option to load from another commit 

@@ -2,23 +2,16 @@ from .prelude import *
 
 from .utils import *
 
+# todo rename to timestamp?
 
 def take_snapshot() -> None:
-    os.environ[SNAPSHOT_NAME_ENV_VAR] = bash(f"bash {DIR_PATH}/snapshot.sh")
+    os.environ[CANNING_TIMESTAMP_ENV_VAR] = bash(f"bash {DIR_PATH}/snapshot.sh")
 
 
-def snapshot_tag() -> str:
-    return os.environ[SNAPSHOT_NAME_ENV_VAR]
+def snapshot_label() -> str:
+    return os.environ[CANNING_TIMESTAMP_ENV_VAR]
 
 
-def write_snapshot_tag(file) -> str:
-    return file.write(snapshot_tag().encode(TAG_ENCODING))
-
-
-def read_snapshot_tag(file) -> str:
-    return str(file.read(SNAPSHOT_NAME_LENGTH), TAG_ENCODING)
-
-
-def git_current_tag() -> bool:
-    return bash("git describe --tags --always")
+def git_head_matches_label(label: str) -> bool:
+    return bash("git describe --tags --always") == label
 

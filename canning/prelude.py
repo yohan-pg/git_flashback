@@ -9,9 +9,11 @@ from io import BufferedWriter
 
 
 LoadedObject = TypeVar("LoadedObject")
+SaveFn = Callable[[Any], None]
+LoadFn = Callable[[Any], None]
 
 SNAPSHOT_NAME_LENGTH = 23
-SNAPSHOT_NAME_ENV_VAR = "CAN_SNAPSHOT"
-TAG_ENCODING = "ascii"
-MAGIC_NUMBER = "CAN".encode(TAG_ENCODING)
+CANNING_TIMESTAMP_ENV_VAR = "CANNING_TIMESTAMP"
+TEXT_ENCODING = "ascii"
+MAGIC_NUMBER = "CAN"
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
