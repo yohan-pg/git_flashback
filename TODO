@@ -1,5 +1,6 @@
 
 - make the basic stuff work again
+- should we really use a 
 - add magic bytes!
 - avoid heavy snapshots by imposing a 1mb file limit -> something
 - verbose mode for deleted tags

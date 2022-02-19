@@ -4,8 +4,7 @@ from .utils import *
 
 
 def take_snapshot() -> None:
-    if not hasattr(os.environ, SNAPSHOT_NAME_ENV_VAR):
-        os.environ[SNAPSHOT_NAME_ENV_VAR] = bash(f"bash {DIR_PATH}/snapshot.sh")
+    os.environ[SNAPSHOT_NAME_ENV_VAR] = bash(f"bash {DIR_PATH}/snapshot.sh")
 
 
 def snapshot_tag() -> str:
@@ -21,5 +20,5 @@ def read_snapshot_tag(file) -> str:
 
 
 def git_current_tag() -> bool:
-    return bash("git describe --tags")
+    return bash("git describe --tags --always")
 

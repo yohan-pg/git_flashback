@@ -8,8 +8,6 @@ from .snapshot import *
 
 Target = Union[str, BufferedWriter]
 
-__all__ = ["save", "load"]
-
 
 def save(
     obj: Any,
@@ -39,6 +37,7 @@ def load_with_modules(
 
     with target_to_file(target, "rb") as file:
         tag = read_snapshot_tag(file) if revision is None else revision
+        
         if git_current_tag() == tag:
             return load_fn(file), sys.modules
         else:

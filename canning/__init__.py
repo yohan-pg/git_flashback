@@ -1,5 +1,2 @@
-from .save_load import *
-
+from .save_load import save, load
 from .snapshot import take_snapshot
-
-take_snapshot()

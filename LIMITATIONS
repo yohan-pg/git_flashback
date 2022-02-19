@@ -1,0 +1,3 @@
+fails on folder names that don't have an __init__.py. This is b.c. git does not save folders!
+I'm not sure if there is a solution?
+-> the regular git loader will find it anyway, this is odd...
