@@ -1,1 +1,3 @@
-*.salt
+*.can
+/tmp/
+**/__pycache__/
