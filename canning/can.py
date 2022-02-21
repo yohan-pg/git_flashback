@@ -12,7 +12,7 @@ class Can:
         self.write_label()
         save_fn(obj, self.file)
 
-    def read_with(self, load_fn: SaveFn, snapshot: Optional[str] = None) -> Tuple[LoadedObject, Dict[str, ModuleType]]:
+    def read_with(self, load_fn: LoadFn, snapshot: Optional[str] = None) -> Tuple[LoadedObject, Dict[str, ModuleType]]:
         assert self.read_magic_number() == MAGIC_NUMBER, "Invalid .can file"
         label = self.read_label()
 

@@ -12,8 +12,19 @@ def select_save_fn(obj: Any) -> bool:
         import torch
 
         if isinstance(obj, torch.nn.Module):
-            return torch.save
-    return pickle.dump
+            if "dill" in sys.modules:
+                import dill
+
+                return lambda *args, **kwargs: torch.save(*args, **kwargs, pickle_module=dill)
+            else:
+                return torch.save
+
+    if "dill" in sys.modules:
+        import dill
+
+        return dill.dump
+    else:
+        return pickle.dump
 
 
 def select_load_fn() -> bool:
@@ -21,4 +32,10 @@ def select_load_fn() -> bool:
         import torch
 
         return torch.load
-    return pickle.load
+    
+    if "dill" in sys.modules:
+        import dill
+
+        return lambda *args, **kwargs: torch.load(*args, **kwargs, pickle_module=dill)
+    else:
+        return pickle.load

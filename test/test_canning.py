@@ -2,7 +2,7 @@ import sys
 import shutil
 import importlib
 import canning
-import time
+
 
 before_path = "test/fixtures/before.py"
 after_path = "test/fixtures/after.py"

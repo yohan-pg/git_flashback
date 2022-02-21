@@ -1,13 +1,18 @@
-
-- avoid heavy snapshots by imposing a 1mb file limit -> something
-- verbose mode for deleted tags
+- use python git instead of bash, such that it works cross platform
 - understand snapshot.sh
-- rename tags to lables
-- add a way of clearing old cans
-- add a way of acessing loaded modules from the git
+- make it a pip module
+
+- Add exception caching to the snapshot.sh
+- add a way of acessing the loaded modules from the git
 - patch subclasscheck on reloaded classes... this might be a bit tricky. Maybe just add a decorator?
+- migrate default to dill! but make sure to disable saving code. also use dill within torch.save
+- add a way of marking labels for safekeeping (just rename the tag? or create a second one?)
+  - add a way of clearing old cans. garbage collect on a folder? also ignore all tags for which another tag exists (so safekept tags arent replaced)
+- verbose mode for deleted tags
+- avoid heavy snapshots by imposing a 1mb file limit -> something
 - fix loading failing for classes without a __init__ file...
 
+- bug: if there are two tags for the same commit, only one will be pikced up by git describe, breaking the check
 
 - test: autocleanup
 - test: paths work when running from another directory
