@@ -1,2 +1,2 @@
-export PYTHONBREAKPOINT=ipdb.set_trace
-conda activate py39
+# export PYTHONBREAKPOINT=ipdb.set_trace
+# conda activate py39

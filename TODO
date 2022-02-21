@@ -2,9 +2,10 @@
 - understand snapshot.sh
 - make it a pip module
 
-- Add exception caching to the snapshot.sh
+- Add exception caching to the snapshot.sh -> or even better, create a snapshot without running `add .`
 - add a way of acessing the loaded modules from the git
 - patch subclasscheck on reloaded classes... this might be a bit tricky. Maybe just add a decorator?
+- prime snapshots instead of taking on the millisections
 - migrate default to dill! but make sure to disable saving code. also use dill within torch.save
 - add a way of marking labels for safekeeping (just rename the tag? or create a second one?)
   - add a way of clearing old cans. garbage collect on a folder? also ignore all tags for which another tag exists (so safekept tags arent replaced)

@@ -35,4 +35,4 @@ class Can:
         return self.file.write(snapshot_label().encode(TEXT_ENCODING))
 
     def read_label(self) -> str:
-        return str(self.file.read(SNAPSHOT_NAME_LENGTH), TEXT_ENCODING)
+        return str(self.file.read(len(create_label())), TEXT_ENCODING)
