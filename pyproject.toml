@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "canning"
+name = "pickle_and_label"
 version = "0.1.0"
 description = ""
 authors = ["yohan-pg <pg.yohan@gmail.com>"]

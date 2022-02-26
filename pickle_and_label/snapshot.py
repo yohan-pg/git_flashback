@@ -2,12 +2,20 @@ from .prelude import *
 
 from .utils import *
 
+from .autocleanup import *
+from .label import *
+
 from datetime import datetime
 
 
 def take_snapshot() -> None:
     init_tree = repo.index.write_tree()
     label = create_label()
+    try:
+        signature = repo.get(repo.head.target).author
+    except pygit2.GitError:
+        raise Exception("Your current repository has no commits! Please commit something first.")
+    # * Note that .write() is never called, so this doesn't modify the user-facing index
     repo.index.add_all()
     commit_hash = repo.create_commit(
         None,
@@ -22,27 +30,9 @@ def take_snapshot() -> None:
         commit_hash,
         pygit2.GIT_OBJ_COMMIT,
         signature,
-        label,
+        "~Canning snapshot~",
     )
     repo.index.read_tree(init_tree)
     os.environ[CANNING_SNAPSHOT_ENV_VAR] = label
+    enable_autocleanup()
 
-
-def snapshot_label() -> str:
-    # todo give this function a better name
-    return os.environ[
-        CANNING_SNAPSHOT_ENV_VAR
-    ]  # todo give the env var a better name also
-
-
-def git_head_matches_label(label: str) -> bool:
-    return (
-        repo.describe(
-            describe_strategy=pygit2.GIT_DESCRIBE_TAGS, show_commit_oid_as_fallback=True
-        )
-        == label
-    )
-
-
-def create_label() -> str:
-    return str(datetime.now()).replace(" ", "/").replace(".", "/").replace(":", ".")

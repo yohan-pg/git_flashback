@@ -18,7 +18,7 @@ def save(
     if save_fn is None:
         save_fn = select_save_fn(obj)
 
-    with target_to_file(target, "wb") as file:
+    with _target_to_file(target, "wb") as file:
         Can(file).write_with(save_fn, obj)
 
     disable_autocleanup()
@@ -34,11 +34,16 @@ def load_with_modules(
     if load_fn is None:
         load_fn = select_load_fn()
 
-    with target_to_file(target, "rb") as file:
+    with _target_to_file(target, "rb") as file:
         return Can(file).read_with(load_fn, snapshot=snapshot)
 
 
-def target_to_file(target: Target, flag: str):
+def read_label(target: Target) -> LoadedObject:
+    with _target_to_file(target, "rb") as file:
+        return Can(file).read_label()
+
+
+def _target_to_file(target: Target, flag: str):
     if isinstance(target, str):
         assert file_extension_is_valid(target)
         return open(target, flag)
