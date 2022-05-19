@@ -11,7 +11,8 @@ import pygit2
 
 
 class setup_tmp_dir:
-    shutil.rmtree("tmp", ignore_errors=True)
+    if os.path.exists("tmp"):
+        shutil.rmtree("tmp")
     os.mkdir("tmp")
     open("tmp/__init__.py", "w").close()  #! This should not be required (bug)
     shutil.copy("tests/fixtures/before.py", "tmp/example.py")
