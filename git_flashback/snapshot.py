@@ -8,13 +8,15 @@ from .label import *
 from datetime import datetime
 
 
-def take_snapshot() -> None:
+def take_snapshot() -> str:
     init_tree = repo.index.write_tree()
     label = create_label()
+
     try:
         signature = repo.get(repo.head.target).author
     except pygit2.GitError:
         raise Exception("Your current repository has no commits! Please commit something first.")
+    
     # * Note that .write() is never called, so this doesn't modify the user-facing index
     repo.index.add_all()
     commit_hash = repo.create_commit(
@@ -32,7 +34,10 @@ def take_snapshot() -> None:
         signature,
         "~Canning snapshot~",
     )
+    
     repo.index.read_tree(init_tree)
     os.environ[CANNING_SNAPSHOT_ENV_VAR] = label
     enable_autocleanup()
+    
+    return label
 

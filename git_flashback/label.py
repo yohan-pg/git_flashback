@@ -20,4 +20,4 @@ def git_head_matches_label(label: str) -> bool:
 
 
 def create_label() -> str:
-    return str(datetime.now()).replace(" ", "/").replace(".", "/").replace(":", ".")
+    return datetime.now().isoformat().replace("-", "").replace(":", "")

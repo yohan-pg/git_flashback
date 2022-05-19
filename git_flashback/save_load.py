@@ -9,6 +9,8 @@ from .can import *
 
 Target = Union[str, BufferedWriter]
 
+import contextlib
+
 
 def save(
     obj: Any,
@@ -45,7 +47,7 @@ def read_label(target: Target) -> LoadedObject:
 
 def _target_to_file(target: Target, flag: str):
     if isinstance(target, str):
-        assert file_extension_is_valid(target)
+        # assert file_extension_is_valid(target)
         return open(target, flag)
     else:
         # todo assert flag is OK
