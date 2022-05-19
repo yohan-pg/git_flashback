@@ -182,6 +182,8 @@ Because snapshots are just diffs, they are very lightweight, provided that `giti
 ```bash
 comm -23 <(git tag -l) <(ls experiments/) | xargs -n 1 git tag -d
 ```
+<!-- todo this also removes other tags. need to filter based on comment -->
+
 
 ## Caveats
 
