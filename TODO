@@ -1,3 +1,4 @@
+- todo: better error messages
 - todo: unit tests
 - todo: publish module
 - bug: if there are two tags for the same commit, 
