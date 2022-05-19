@@ -1,23 +1,13 @@
-- make it a pip module
-- add padding to the header for future stuff?
-  - read up on how PNG does padding and such
-- make save/load methods on a snapshot! -> also, autocleanup
-- add a way of executing a cleanup though the cli (-m flag or something)
-
+- todo: unit tests
+- todo: publish module
 - bug: if there are two tags for the same commit, 
       only one will be picked up by git describe, breaking the check
-
-- test: renaming a tag to back it up
-- test: accessing the loaded modules from the git
-- test: isinstance, issubclass
-- test: dill default
-- test: make sure it works from another repo
-- test: autocleanup
-- test: paths work when running from another directory
-- test: optional file instead of filename string
-- test: option to load from another commit 
-- test: if the current commit matches the snapshot, just load modules from the working directory
-- test: torch compatibiltiy
-- test: repo.index.add_all() reflects what the user adds manually to the index 
-      (this will be tricky to test! maybe just do it manually)
-
+- bug: 
+      fails on folder names that don't have an __init__.py. This is b.c. git does not save folders!
+      I'm not sure if there is a solution?
+      -> the regular git loader will find it anyway, this is odd...
+- bug:
+      duplicate tags will fail. Instead, we want to silently return the old one (the code will not have changed!)
+- todo: git pipline
+- todo: autocleanup after tests
+- todo document how it works + flashback returning modules
