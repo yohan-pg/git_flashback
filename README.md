@@ -183,7 +183,6 @@ Because snapshots are just diffs, they are very lightweight, provided that `giti
 ```bash
 comm -23 <(git tag -l) <(ls experiments/) | xargs -n 1 git tag -d
 ```
-<!-- todo this also removes other tags. need to filter based on comment -->
 
 
 ## Caveats
@@ -204,3 +203,6 @@ Python does not support loading multiple versions of the same dependencies by de
 
 ## Acknowledgements
 This library is a small wrapper around [gitimport](https://pypi.org/project/gitimport/), which carries most of the implementation weight. :)  -->
+
+
+<!-- todo this also removes other tags. need to filter based on comment -->

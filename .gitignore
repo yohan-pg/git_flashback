@@ -1,3 +1,4 @@
 *.can
 **/__pycache__/
 /dist/
+/tmp/
