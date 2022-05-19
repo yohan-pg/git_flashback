@@ -1,23 +1,14 @@
-- use python git instead of bash, such that it works cross platform
-- understand snapshot.sh
-- make it a pip module
-
-- Add exception caching to the snapshot.sh -> or even better, create a snapshot without running `add .`
-- add a way of acessing the loaded modules from the git
-- patch subclasscheck on reloaded classes... this might be a bit tricky. Maybe just add a decorator?
-- prime snapshots instead of taking on the millisections
-- migrate default to dill! but make sure to disable saving code. also use dill within torch.save
-- add a way of marking labels for safekeeping (just rename the tag? or create a second one?)
-  - add a way of clearing old cans. garbage collect on a folder? also ignore all tags for which another tag exists (so safekept tags arent replaced)
-- verbose mode for deleted tags
-- avoid heavy snapshots by imposing a 1mb file limit -> something
-- fix loading failing for classes without a __init__ file...
-
-- bug: if there are two tags for the same commit, only one will be pikced up by git describe, breaking the check
-
-- test: autocleanup
-- test: paths work when running from another directory
-- test: optional file instead of filename string
-- test: option to load from another commit 
-- test: if the current commit matches the snapshot, just load modules from the working directory
-- test: torch compatibiltiy
+- todo: better error messages
+- todo: unit tests
+- todo: publish module
+- bug: if there are two tags for the same commit, 
+      only one will be picked up by git describe, breaking the check
+- bug: 
+      fails on folder names that don't have an __init__.py. This is b.c. git does not save folders!
+      I'm not sure if there is a solution?
+      -> the regular git loader will find it anyway, this is odd...
+- bug:
+      duplicate tags will fail. Instead, we want to silently return the old one (the code will not have changed!)
+- todo: git pipline
+- todo: autocleanup after tests
+- todo document how it works + flashback returning modules

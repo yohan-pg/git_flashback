@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "canning"
+name = "git_flashback"
 version = "0.1.0"
 description = ""
 authors = ["yohan-pg <pg.yohan@gmail.com>"]
