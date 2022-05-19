@@ -8,7 +8,7 @@ from .label import *
 from datetime import datetime
 
 
-def take_snapshot() -> str:
+def snapshot() -> str:
     init_tree = repo.index.write_tree()
     label = create_label()
 
@@ -32,12 +32,11 @@ def take_snapshot() -> str:
         commit_hash,
         pygit2.GIT_OBJ_COMMIT,
         signature,
-        "~Canning snapshot~",
+        COMMIT_COMMENT,
     )
     
     repo.index.read_tree(init_tree)
-    os.environ[CANNING_SNAPSHOT_ENV_VAR] = label
-    enable_autocleanup()
+    os.environ[SNAPSHOT_ENV_VAR] = label
     
     return label
 

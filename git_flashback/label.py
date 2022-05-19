@@ -6,7 +6,7 @@ from datetime import datetime
 def snapshot_label() -> str:
     # todo give this function a better name
     return os.environ[
-        CANNING_SNAPSHOT_ENV_VAR
+        SNAPSHOT_ENV_VAR
     ]  # todo give the env var a better name also
 
 

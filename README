@@ -14,7 +14,7 @@ First, call `snapshot` to (transparently) commit and tag your codebase. You can 
 import git_flashback import snapshot
 
 timestamp = snapshot()
-print(timestamp) # => 2022-05-19T15:00:16.264685
+print(timestamp) # => 20220519T150016.264685
 
 import torch 
 
@@ -38,7 +38,7 @@ class Model(torch.nn.Module):
     def forward(self):
         return 2
 
-with flashback("2022-05-19T15:00:16.264685"): 
+with flashback("20220519T150016.264685"): 
     model = torch.load("model.pt")
 
 print(model()) # => 1
@@ -47,6 +47,9 @@ print(model()) # => 1
 ```
 
 Regardless of your code changes and your package structure, `model` will behave *exactly as when saved*. 
+
+> Timestamps like *20220519T150016.264685* are [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) *basic format* timestamps, which are used instead of the *extended format* like 2022-05-19T15:00:16.264685 because git does not support semicolons in tags.
+
 
 ### Workflow tips
 It is recommended to snapshot as soon as possible, before the rest of your imports. This is to avoid delays in producing the snapshot (if your modules takes seconds to load, you might edit the code before the snapshot is produced).
@@ -77,11 +80,11 @@ csv.write(f"experiments/{timestamp}/losses.csv")
 # Figure 4: save the timestamp alongside artifacts, for instance, by naming their directory
 ```
 
-For conveniance, `flashback` will ignore everything before the rightmost forward slash, so a path like `"experiments/2022-05-19T15:00:16.264685"` can be passed directly to it.
+For conveniance, `flashback` will ignore everything before the rightmost forward slash, so a path like `"experiments/20220519T150016.264685"` can be passed directly to it.
 
 ```python
-with flashback("experiments/2022-05-19T15:00:16.264685"): 
-    # loads the snapshot "2022-05-19T15:00:16.264685"
+with flashback("experiments/20220519T150016.264685"): 
+    # loads the snapshot "20220519T150016.264685"
     ... 
 ```
 
@@ -90,24 +93,23 @@ with flashback("experiments/2022-05-19T15:00:16.264685"):
 Timestamps are just git tags, and so they can be checked out, letting you inspect and debug your past experiments.
 
 ```bash 
-git checkout 2022-05-19T15.00.16.264685
-# (note that any ':' character must replaced by '.' when checking out, because of a git limitation)
+git checkout 20220519T150016.264685
 ```
 
 **When attempting to load from a timestamp which matches the current `HEAD`, `snapshot` will return the current tag (doing nothing) and `flashback` will instead load from the present (does nothing also).**
 For example, after the checkout, the following code unpickles from the present, because the timestamp matches:
 
 ```python
-# currently in 2022-05-19T15:00:16.264685
+# currently in 20220519T150016.264685
 
 # no new snapshot is created, the current tag is returned
-print(snapshot()) # => "2022-05-19T15:00:16.264685"
+print(snapshot()) # => "20220519T150016.264685"
 
 class Model(torch.nn.Module):
     def forward(self):
         return 3 # edited
 
-with flashback("2022-05-19T15:00:16.264685"): 
+with flashback("20220519T150016.264685"): 
     # loads from the present
     model = torch.load("model.pt") 
     
@@ -120,12 +122,12 @@ This is a bit hard to see in a contrived example, but this makes it easy to chec
 
 ```bash
 git add .
-git commit -m "Modified experiment 2022-05-19T15:00:16.264685"
+git commit -m "Modified experiment 20220519T150016.264685"
 # => 4a2a14084b044d90f892f6201dd89dadc36db7a5
 git checkout main
 ```
 
-After all this, and so it is also possible to flashback to commits directly (git tags are just pointers to commits):
+It is also possible to flashback to commits directly (git tags are just pointers to commits), letting us use the changed code while sitting comfortably in `main`:
 
 ```python
 # currently in `main`
@@ -163,7 +165,7 @@ It is important to note that everything is duplicated, including the class defin
 To share snapshots, simply push their tags to github. 
 
 ```bash
-git push 2022-05-19T15:00:16.264685
+git push 20220519T150016.264685
 ```
 
 Then, make sure to pull them locally before calling `flashback` (tags must be pulled manually).
@@ -171,13 +173,13 @@ Then, make sure to pull them locally before calling `flashback` (tags must be pu
 ```bash
 git clone my-repo
 cd my-repo
-git pull 2022-05-19T15:00:16.264685
+git pull 20220519T150016.264685
 ```
 
 Alternatively, when the `autopull` flag is true, `flashback` will attempt to `git pull` any missing snapshot automatically. 
 
 ```python
-flashback("2022-05-19T15:00:16.264685", autopull=True)
+flashback("20220519T150016.264685", autopull=True)
 
 # Figure 8: the `autopull` option will pull snapshots remotely
 ```
@@ -208,4 +210,4 @@ Python does not support loading multiple versions of the same dependencies by de
 
 
 ## Acknowledgements
-This library is a small wrapper around [gitimport](), which carries most of the implementation weight. :) 
+This library is a small wrapper around [gitimport](https://pypi.org/project/gitimport/), which carries most of the implementation weight. :) 
