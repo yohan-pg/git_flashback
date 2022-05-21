@@ -1,9 +1,12 @@
 import sys
-init_modules = sys.modules.copy()
+INIT_MODULES = sys.modules.copy()
 
 import pygit2
 from typing import * # type: ignore
 from types import ModuleType
 from io import BufferedWriter
+import sys
+import os
 
-repo = pygit2.Repository(".") 
+REPO = pygit2.Repository(".") 
+

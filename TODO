@@ -1,4 +1,7 @@
 - todo: better error messages
+      - when there is no repo
+      - when the commit is not found    
+
 - todo: unit tests
 - todo: publish module
 - bug: if there are two tags for the same commit, 

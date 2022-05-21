@@ -1,9 +1,9 @@
-Work in progress
-<!-- # `git_flashback`
+A work in progress
+# `git_flashback`
 
 `git_flashback` is a Python library which lets you **load modules from the past** and thus **unpickle objects from the past**, by remembering their source code with git.
 
-This is implemented with *transparent git snapshots* (which commit and tag your codebase, without affecting your working directory), and *transparent module loading* (which loads module code directly within the git filesystem, without affecting your working directory).
+This is implemented with *transparent git snapshots* (which commit and tag your codebase, without affecting your working directory), and *transparent module loading* (which loads source code directly from within the git filesystem, without affecting your working directory).
 
 The intended use case is reproductible machine learning experiments. But, `git_flashback` is agnositic to external libraries such as torch, and can be used as a generic tool for temporarily restoring code to its older versions.
 
@@ -23,13 +23,12 @@ class Model(torch.nn.Module):
     def forward(self):
         return 1
 
-torch.save(Model(), f"model.pt") # also works with pickle or anything else
+torch.save(Model(), f"model.pt") # works with torch, pickle, dill, or anything else
 
-# Figure 1: `snapshot` commits your code and tags it with a timestamp
+# Figure 1: `snapshot` commits your code in the background and tags it with a timestamp
 ```
 
-
-Modify your code without fear. Later, `flashback` to the old codebase when loading your objects. This transparently loads the required modules from your snapshot, rather than the modified ones in your current filesystem.
+Modify your code without fear. Later, `flashback` to the old codebase when loading your objects. This transparently loads their source code from your git snapshot, rather than the modified code in your current filesystem.
 
 ```python
 import git_flashback import flashback
@@ -47,7 +46,7 @@ print(model()) # => 1
 # Figure 2: `flashback` rewires imports so that modules and unpickled objects load from the past
 ```
 
-Regardless of your code changes and your package structure, `model` will behave *exactly as when saved*. 
+Regardless of your code changes (your package structure), `model` will behave *exactly as when saved*. 
 
 > Timestamps like *20220519T150016* are [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) *basic format* timestamps, which are used instead of the *extended format* like 2022-05-19T15:00:16.264685 because git does not support semicolons in tags.
 
@@ -69,7 +68,7 @@ import os
 # Figure 3: `snapshot` should be called before imports
 ```
 
-Finally, a good way of working is to simply save all artifacts in a directory named with the timestamp. This is a natural way of bundling the timestamp alongside the saved objects.
+A nice way of working is to save all artifacts in a directory named with the timestamp (this is a natural way of bundling the timestamp alongside the saved objects).
 
 ```python
 ...
@@ -88,22 +87,19 @@ with flashback("experiments/20220519T150016"):
     ... 
 ```
 
-
 ### Back to the future (past code editing)
-Timestamps are just git tags, and so they can be checked out, letting you inspect and debug your past experiments.
+Timestamps are just git tags, and can be checked out, letting you inspect and debug your past experiments.
 
 ```bash 
 git checkout 20220519T150016
 ```
 
-**When attempting to load from a timestamp which matches the current `HEAD`, `snapshot` will return the current tag (doing nothing) and `flashback` will instead load from the present (does nothing also).**
+<!-- todo but snapshot doesn't know we are aiming for 20220519T150016 -->
+**When attempting to load from a timestamp which matches the current `HEAD`, `flashback` will instead load from the present.**
 For example, after the checkout, the following code unpickles from the present, because the timestamp matches:
 
 ```python
-# currently in 20220519T150016
-
-# no new snapshot is created, the current tag is returned
-print(snapshot()) # => "20220519T150016"
+# currently in commit tagged '20220519T150016'
 
 class Model(torch.nn.Module):
     def forward(self):
@@ -115,7 +111,7 @@ with flashback("20220519T150016"):
     
 print(model()) # => 3
 
-# Figure 5: when a past snapshot is checked out, `snapshot` and `flashback` become no-ops
+# Figure 5: when a past snapshot is checked out, `snapshot` and `flashback` are no-ops
 ```
 
 This is a bit hard to see in a contrived example, but this makes it easy to checkout a past snapshot, edit its code, and verify that the changes work as desired. Afterwards, they can be committed normally:
@@ -127,7 +123,7 @@ git commit -m "Modified experiment 20220519T150016"
 git checkout main
 ```
 
-It is also possible to flashback to commits directly (git tags are just pointers to commits), letting us use the changed code while sitting comfortably in `main`:
+Additionally, it is possible to flashback to commits directly, letting us use the changed code while sitting comfortably in `main`:
 
 ```python
 # currently in `main`
@@ -149,7 +145,7 @@ When debugging or after peforming refactors, it is often desirable to compare th
 from git_flashback import flashback
 import my_module
 
-# `flashback` to an older commit; any git reference is valid!
+# `flashback` to an older commit; any git revision is valid!
 with flashback("fcfee1d161cd4dd9e07af841b1166dbbd8a07980"): 
     import my_module as my_old_module
 
@@ -178,23 +174,24 @@ git fetch
 
 ## Cleaning up old snapshots
 
-Because snapshots are just diffs, they are very lightweight, provided that `gitignore` is configured properly to ignore large artifacts. Still, it may be desirable to delete old versions to avoid clutter. To do so, just remove their tags from git, leaving them to be garbage collected. For instance, if all tags are saved as subdirectories of `experiments/`, the following command clears out all the other ones:
+Because snapshots are just diffs, they are very lightweight, provided that `gitignore` is configured properly to ignore large artifacts. Still, it may be desirable to avoid clutter by deleting old snapshots. To do so, just remove their tags from git, leaving them to be garbage collected. For instance, if all tags are saved as subdirectories of `experiments/`, the following command clears out all the other ones:
 
 ```bash
 comm -23 <(git tag -l) <(ls experiments/) | xargs -n 1 git tag -d
 ```
 
+<!-- todo this also removes other tags. need to filter based on comment -->
 
 ## Caveats
 
 ### Typing and class duplication
-Because objects loaded from the past come from a different codebase, `isinstance` and `issubclass` will return `False` when compared to classes from the present (which is technically true, but may be undesirable).
+Because objects loaded from the past do not have the same class definitions, `isinstance` and `issubclass` will return `False` when compared to classes from the present (which is technically true, but may be undesirable).
 
 For this reason, `git_flashback` exports the following functions:
 - `isinstance_by_name` and `issubclass_by_name`, which considers classes to be equal if they have the same name.
 - `isinstance_by_qualname` and `issubclass_by_qualname`, which considers classes to be equal if they have the same name *and packaging path* (qualname).
 
-Of course, it is also possible to manually override `__instancecheck__` and `__subclasscheck__` to implement any desired behavior.
+Of course, it is also possible to manually override `__instancecheck__` and `__subclasscheck__` on your classes to implement any desired behavior.
 
 ### Dynamic imports
 Python does not support loading multiple versions of the same dependencies by default. So, this library works by clearing out
@@ -202,7 +199,7 @@ Python does not support loading multiple versions of the same dependencies by de
 
 
 ## Acknowledgements
-This library is a small wrapper around [gitimport](https://pypi.org/project/gitimport/), which carries most of the implementation weight. :)  -->
+This library is a small wrapper around [gitimport](https://pypi.org/project/gitimport/), which carries most of the implementation weight. :)  
 
 
-<!-- todo this also removes other tags. need to filter based on comment -->
+<!-- todo explain the implementation briefly -->
